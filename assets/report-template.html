@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Software Evaluation Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root {
     --bg: #f8f9fb; --surface: #ffffff; --border: #e2e6ed; --text: #1a1d23;
@@ -13,6 +14,37 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+
+  /* ── Download bar ── */
+  .download-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 24px;
+    display: flex;
+    justify-content: flex-end;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .download-btn:hover { opacity: 0.88; }
+  .download-btn:disabled { opacity: 0.5; cursor: default; }
+
   .page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
   .report-header { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 36px; margin-bottom: 20px; box-shadow: var(--shadow); }
   .report-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
@@ -100,10 +132,24 @@
   .source-text { color: var(--text); line-height: 1.4; }
   .source-text a { color: var(--accent); text-decoration: none; }
   .source-text a:hover { text-decoration: underline; }
+
+  @media print {
+    .download-bar { display: none; }
+    body { background: white; }
+    .page { padding: 20px; }
+  }
 </style>
 </head>
 <body>
-<div class="page">
+
+<div class="download-bar">
+  <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">
+    &#8681; Download PDF
+  </button>
+</div>
+
+<div class="page" id="report-content">
+
   <div class="report-header">
     <h1>{{REPORT_TITLE}}</h1>
     <div class="report-meta">
@@ -112,9 +158,12 @@
       <span>{{TOOLS_EVALUATED}}</span>
     </div>
   </div>
+
   <div class="methodology-card"><p>{{METHODOLOGY}}</p></div>
+
   <div class="section-heading">Scoring weights</div>
   <div class="weights-row">{{WEIGHTS_PILLS}}</div>
+
   <div class="section-heading">Scorecard</div>
   <div class="scorecard-card">
     <table class="scorecard-table">
@@ -136,18 +185,50 @@
       </tbody>
     </table>
   </div>
+
   {{WINNER_BANNER}}
+
   <div class="section-heading">Tool profiles</div>
   <div class="tool-grid">{{TOOL_CARDS}}</div>
+
   <div class="section-heading">Recommendation</div>
   <div class="recommendation-card">
     <div class="recommendation-header">Recommendation</div>
     <div class="recommendation-body">{{RECOMMENDATION_BODY}}</div>
   </div>
+
   <div class="section-heading">Sources</div>
   <div class="sources-card">
     <ol class="source-list">{{SOURCE_ITEMS}}</ol>
   </div>
+
 </div>
+
+<script>
+  function downloadPDF() {
+    const btn = document.getElementById('downloadBtn');
+    btn.disabled = true;
+    btn.textContent = 'Generating…';
+
+    const title = document.querySelector('h1').textContent.trim()
+      .replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
+
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: title + '.pdf',
+      image: { type: 'jpeg', quality: 0.97 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    html2pdf().set(opt).from(document.getElementById('report-content')).save()
+      .then(() => {
+        btn.disabled = false;
+        btn.innerHTML = '&#8681; Download PDF';
+      });
+  }
+</script>
+
 </body>
 </html>
