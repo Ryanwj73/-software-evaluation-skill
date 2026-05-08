@@ -138,6 +138,27 @@
     body { background: white; }
     .page { padding: 20px; }
   }
+
+  /* ── PDF page-break safety ── */
+  .tool-card,
+  .scorecard-card,
+  .recommendation-card,
+  .sources-card,
+  .winner-banner,
+  .methodology-card,
+  .scorecard-table tr,
+  .source-item,
+  .tool-section,
+  .pro-con-grid,
+  .quote-block,
+  .funding-row {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .section-heading {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
 </style>
 </head>
 <body>
@@ -219,7 +240,7 @@
       image: { type: 'jpeg', quality: 0.97 },
       html2canvas: { scale: 2, useCORS: true, logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      pagebreak: { mode: ['css', 'legacy'], avoid: ['.tool-card', '.scorecard-card', '.recommendation-card', '.sources-card', '.winner-banner', '.methodology-card', '.quote-block', '.tool-section', '.funding-row'] }
     };
 
     html2pdf().set(opt).from(document.getElementById('report-content')).save()
